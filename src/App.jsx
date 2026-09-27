@@ -3,6 +3,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import JustAMinute from './pages/JustAMinute'
 import Literacy from './pages/Literacy'
 import Login from './pages/Login'
+import ManageClasses from './pages/ManageClasses'
 import Numeracy from './pages/Numeracy'
 import Principal from './pages/Principal'
 
@@ -40,6 +41,14 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['principal']}>
             <Principal />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manage-classes"
+        element={
+          <ProtectedRoute allowedRoles={['principal']}>
+            <ManageClasses />
           </ProtectedRoute>
         }
       />
