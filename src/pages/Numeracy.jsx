@@ -1,5 +1,12 @@
+import WeeklyDraw from '../components/WeeklyDraw'
+
 function Numeracy() {
-  return <h1>Numeracy Dashboard Placeholder</h1>
+  return (
+    <main>
+      <h1>Numeracy Dashboard</h1>
+      <WeeklyDraw programName="numeracy" />
+    </main>
+  )
 }
 
 export default Numeracy

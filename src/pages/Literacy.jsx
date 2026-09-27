@@ -1,5 +1,12 @@
+import WeeklyDraw from '../components/WeeklyDraw'
+
 function Literacy() {
-  return <h1>Literacy Dashboard Placeholder</h1>
+  return (
+    <main>
+      <h1>Literacy Dashboard</h1>
+      <WeeklyDraw programName="literacy" />
+    </main>
+  )
 }
 
 export default Literacy
