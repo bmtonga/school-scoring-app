@@ -21,9 +21,11 @@ body {
 
 main {
   width: min(960px, 100%);
-  margin: 0 auto;
-  padding: 1rem;
+  margin: 1rem auto;
+  padding: 1rem 1rem 1.25rem;
   background: var(--white);
+  border: 2px solid var(--deep-green);
+  border-radius: 0.5rem;
 }
 
 h1,
@@ -32,16 +34,77 @@ h3 {
   color: var(--deep-green);
 }
 
+main > h1 {
+  margin: -1rem -1rem 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--deep-green);
+  color: var(--white);
+}
+
+a {
+  color: var(--deep-green);
+  font-weight: 600;
+}
+
+a:hover {
+  color: var(--warm-gold);
+}
+
 button {
   background: var(--warm-gold);
   border: 1px solid var(--deep-green);
   color: var(--deep-green);
-  padding: 0.4rem 0.7rem;
+  border-radius: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+input,
+select {
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--deep-green);
+  border-radius: 0.35rem;
+  background: var(--white);
+  color: var(--deep-green);
+}
+
+form,
+section,
+article,
+fieldset {
+  background: var(--sage-green);
+  border: 1px solid var(--deep-green);
+  border-radius: 0.5rem;
+  padding: 0.8rem;
+  margin: 0.9rem 0;
+}
+
+label {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0.35rem 0;
+}
+
+input[type='radio'] {
+  width: auto;
+}
+
+p {
+  margin: 0.45rem 0;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  background: var(--white);
 }
 
 th,
@@ -51,9 +114,13 @@ td {
   text-align: left;
 }
 
+th {
+  background: var(--sage-green);
+}
+
 .card {
-  background: var(--white);
-  border: 1px solid var(--sage-green);
+  background: var(--sage-green);
+  border: 1px solid var(--deep-green);
   padding: 0.75rem;
   margin: 1rem 0;
 }
