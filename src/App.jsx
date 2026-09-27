@@ -5,7 +5,7 @@ import Literacy from './pages/Literacy'
 import Login from './pages/Login'
 import ManageClasses from './pages/ManageClasses'
 import Numeracy from './pages/Numeracy'
-import Principal from './pages/Principal'
+import PrincipalDashboard from './pages/PrincipalDashboard'
 
 function App() {
   return (
@@ -40,7 +40,7 @@ function App() {
         path="/principal"
         element={
           <ProtectedRoute allowedRoles={['principal']}>
-            <Principal />
+            <PrincipalDashboard />
           </ProtectedRoute>
         }
       />
