@@ -1,3 +1,4 @@
+import ScoreEntry from '../components/ScoreEntry'
 import WeeklyDraw from '../components/WeeklyDraw'
 
 function Literacy() {
@@ -5,6 +6,7 @@ function Literacy() {
     <main>
       <h1>Literacy Dashboard</h1>
       <WeeklyDraw programName="literacy" />
+      <ScoreEntry programName="literacy" />
     </main>
   )
 }
