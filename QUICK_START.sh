@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# QUICK START GUIDE - Local Supabase Setup
+
+echo "Local Supabase + App - Quick Start"
+echo "=================================="
+echo ""
+echo "Current Status:"
+echo "  ✓ Supabase Stack: Running"
+echo "  ✓ Dev Server: http://localhost:5173"
+echo "  ✓ Studio: http://127.0.0.1:54323"
+echo ""
+
+echo "URLs:"
+echo "  • App:              http://localhost:5173"
+echo "  • Supabase Studio:  http://127.0.0.1:54323"
+echo "  • API:              http://127.0.0.1:54321/rest/v1"
+echo "  • Database:         127.0.0.1:54322 (postgres)"
+echo ""
+
+echo "Test Users (password: password123):"
+echo "  • principal@school.local          → /principal page"
+echo "  • numeracy@school.local           → /numeracy page"
+echo "  • literacy@school.local           → /literacy page"
+echo "  • jam@school.local                → /just-a-minute page"
+echo "  • invalid@school.local            → login denied (invalid role)"
+echo ""
+
+echo "Commands:"
+echo "  npm run dev          Start dev server"
+echo "  npx supabase start   Start Supabase (if stopped)"
+echo "  npx supabase stop    Stop Supabase"
+echo "  npx supabase status  Check status"
+echo "  npx supabase logs    View logs"
+echo "  node create-test-users.js   Create test users"
+echo ""
+
+echo "Next Steps:"
+echo "  1. Open http://localhost:5173 in browser"
+echo "  2. Login with principal@school.local / password123"
+echo "  3. Verify redirect to /principal"
+echo "  4. Test RLS by switching users"
+echo "  5. Verify data isolation between programmes"
+echo ""

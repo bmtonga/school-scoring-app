@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 
 function Login() {
   const navigate = useNavigate()
-  const { session, role, loading } = useAuth()
+  const { session, role, loading, authError } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -13,7 +13,7 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
-    if (!loading && session) {
+    if (!loading && session && getDashboardPath(role) !== '/login') {
       navigate(getDashboardPath(role), { replace: true })
     }
   }, [loading, navigate, role, session])
@@ -23,29 +23,36 @@ function Login() {
     setErrorMessage('')
     setIsSubmitting(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    if (error) {
-      setErrorMessage(error.message)
+      if (error) {
+        setErrorMessage(error.message)
+        return
+      }
+
+      const nextRole = data.user?.app_metadata?.role
+      const destination = getDashboardPath(nextRole)
+
+      if (destination === '/login') {
+        const { error: signOutError } = await supabase.auth.signOut()
+        setErrorMessage(
+          signOutError
+            ? `Your account role is not authorized, and sign-out failed: ${signOutError.message}`
+            : 'Your account role is not authorized for this app.',
+        )
+        return
+      }
+
+      navigate(destination, { replace: true })
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to sign in. Please try again.')
+    } finally {
       setIsSubmitting(false)
-      return
     }
-
-    const nextRole = data.user?.user_metadata?.role
-    const destination = getDashboardPath(nextRole)
-
-    if (destination === '/login') {
-      setErrorMessage('Your account role is not authorized for this app.')
-      await supabase.auth.signOut()
-      setIsSubmitting(false)
-      return
-    }
-
-    navigate(destination, { replace: true })
-    setIsSubmitting(false)
   }
 
   return (
@@ -61,7 +68,7 @@ function Login() {
           <p className="form-intro">Sign in to continue to your scoring workspace.</p>
           <div className="form-field"><label htmlFor="email">Email</label><input id="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
           <div className="form-field"><label htmlFor="password">Password</label><input id="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required /></div>
-          {errorMessage ? <p className="status-message error-message" role="alert">{errorMessage}</p> : null}
+          {errorMessage || authError ? <p className="status-message error-message" role="alert">{errorMessage || authError}</p> : null}
           <button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in...' : 'Sign in'}</button>
         </form>
       </section>

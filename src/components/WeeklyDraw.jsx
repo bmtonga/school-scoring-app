@@ -57,6 +57,7 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
           )
         `,
       )
+      .is('archived_at', null)
 
     if (showLevelToggle) {
       query = query.eq('classes.level', selectedLevel)
@@ -209,7 +210,15 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
     const { error } = await supabase.from('draws').insert(payload)
 
     if (error) {
-      setErrorMessage(error.message)
+      setErrorMessage(
+        error.code === '23505'
+          ? 'A draw is already saved for one or more classes today. Refresh the page to load the latest draws.'
+          : error.code === '42501'
+            ? 'You do not have permission to save draws for this programme.'
+            : error.code === '23503'
+              ? 'One or more selected students or classes are no longer available. Refresh and draw again.'
+              : error.message,
+      )
       setIsSaving(false)
       return
     }

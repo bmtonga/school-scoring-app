@@ -197,7 +197,15 @@ function ScoreEntry({ programName }) {
     const { error } = await supabase.from('scores').insert(payload)
 
     if (error) {
-      setErrorMessage(error.message)
+      setErrorMessage(
+        error.code === '23505'
+          ? 'A score has already been submitted for one or more draws. Refresh the page to load the remaining scores.'
+          : error.code === '42501'
+            ? 'You do not have permission to submit scores for this programme.'
+            : error.code === '23514'
+              ? 'Points must be zero or greater. Correct the entries and try again.'
+              : error.message,
+      )
       setIsSaving(false)
       return
     }

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import AppShell from '../components/AppShell'
+import { PROGRAM_IDS } from '../lib/programs'
 import { supabase } from '../lib/supabaseClient'
 
 const LEVELS = ['all', 'junior', 'senior']
 const GRADE_OPTIONS = [1, 2, 10, 11, 12]
+const STATUS_OPTIONS = ['active', 'archived', 'all']
 
 const gradeLabel = (grade) => (grade < 3 ? `Form ${grade}` : `Grade ${grade}`)
 
@@ -12,6 +14,7 @@ function StudentManagement({ programName, title }) {
   const [classes, setClasses] = useState([])
   const [selectedLevel, setSelectedLevel] = useState('all')
   const [selectedGrade, setSelectedGrade] = useState('all')
+  const [selectedStatus, setSelectedStatus] = useState('active')
   const [newStudentName, setNewStudentName] = useState('')
   const [newStudentClassId, setNewStudentClassId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -29,7 +32,7 @@ function StudentManagement({ programName, title }) {
       const [studentsResult, classesResult, drawsResult] = await Promise.all([
         supabase
           .from('students')
-          .select('id, name, class_id, classes!inner(id, grade, name, level)')
+          .select('id, name, class_id, archived_at, classes!inner(id, grade, name, level)')
           .order('name', { ascending: true }),
         supabase
           .from('classes')
@@ -38,7 +41,8 @@ function StudentManagement({ programName, title }) {
           .order('name', { ascending: true }),
         supabase
           .from('draws')
-          .select('student_id'),
+          .select('student_id')
+          .eq('program_id', PROGRAM_IDS[programName]),
       ])
 
       if (!isMounted) {
@@ -71,6 +75,7 @@ function StudentManagement({ programName, title }) {
       setStudents((studentsResult.data ?? []).map((student) => ({
         id: student.id,
         name: student.name,
+        archivedAt: student.archived_at,
         classInfo: student.classes,
         hasBeenSelected: selectedStudentIds.has(student.id),
       })))
@@ -88,9 +93,12 @@ function StudentManagement({ programName, title }) {
     const [studentsResult, drawsResult] = await Promise.all([
       supabase
         .from('students')
-        .select('id, name, class_id, classes!inner(id, grade, name, level)')
+        .select('id, name, class_id, archived_at, classes!inner(id, grade, name, level)')
         .order('name', { ascending: true }),
-      supabase.from('draws').select('student_id'),
+      supabase
+        .from('draws')
+        .select('student_id')
+        .eq('program_id', PROGRAM_IDS[programName]),
     ])
 
     if (studentsResult.error || drawsResult.error) {
@@ -102,6 +110,7 @@ function StudentManagement({ programName, title }) {
     setStudents((studentsResult.data ?? []).map((student) => ({
       id: student.id,
       name: student.name,
+      archivedAt: student.archived_at,
       classInfo: student.classes,
       hasBeenSelected: selectedStudentIds.has(student.id),
     })))
@@ -137,19 +146,15 @@ function StudentManagement({ programName, title }) {
     setIsSaving(false)
   }
 
-  const handleRemoveStudent = async (student) => {
-    if (student.hasBeenSelected) {
-      return
-    }
-
-    if (!window.confirm(`Remove ${student.name} from ${student.classInfo.name}?`)) {
-      return
-    }
-
+  const handleArchiveToggle = async (student) => {
     setIsSaving(true)
     setErrorMessage('')
     setActionMessage('')
-    const { error } = await supabase.from('students').delete().eq('id', student.id)
+    const { data, error } = await supabase
+      .from('students')
+      .update({ archived_at: student.archivedAt ? null : new Date().toISOString() })
+      .eq('id', student.id)
+      .select('id')
 
     if (error) {
       setErrorMessage(error.message)
@@ -157,7 +162,13 @@ function StudentManagement({ programName, title }) {
       return
     }
 
-    setActionMessage(`${student.name} was removed.`)
+    if (!data?.length) {
+      setErrorMessage('You do not have permission to update this student.')
+      setIsSaving(false)
+      return
+    }
+
+    setActionMessage(`${student.name} was ${student.archivedAt ? 'restored' : 'archived'}.`)
     await reloadStudents()
     setIsSaving(false)
   }
@@ -166,9 +177,11 @@ function StudentManagement({ programName, title }) {
     () => students.filter((student) => {
       const matchesLevel = selectedLevel === 'all' || student.classInfo.level === selectedLevel
       const matchesGrade = selectedGrade === 'all' || String(student.classInfo.grade) === selectedGrade
-      return matchesLevel && matchesGrade
+      const matchesStatus = selectedStatus === 'all'
+        || (selectedStatus === 'archived' ? Boolean(student.archivedAt) : !student.archivedAt)
+      return matchesLevel && matchesGrade && matchesStatus
     }),
-    [selectedGrade, selectedLevel, students],
+    [selectedGrade, selectedLevel, selectedStatus, students],
   )
 
   const groupedStudents = useMemo(
@@ -192,6 +205,11 @@ function StudentManagement({ programName, title }) {
           <p className="section-kicker">{filteredStudents.length} students shown · {selectedCount} selected before for {title}</p>
         </div>
         <div className="student-filters">
+          <label htmlFor={`${programName}-status-filter`}>Status
+            <select id={`${programName}-status-filter`} value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
+              {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}
+            </select>
+          </label>
           <label htmlFor={`${programName}-level-filter`}>Level
             <select id={`${programName}-level-filter`} value={selectedLevel} onChange={(event) => setSelectedLevel(event.target.value)}>
               {LEVELS.map((level) => <option key={level} value={level}>{level === 'all' ? 'All levels' : level[0].toUpperCase() + level.slice(1)}</option>)}
@@ -237,9 +255,10 @@ function StudentManagement({ programName, title }) {
                   <div className="student-row" key={student.id}>
                     <span className="avatar">{student.name[0]?.toUpperCase() ?? '?'}</span>
                     <div><strong>{student.name}</strong><small>Class {student.classInfo.name}</small></div>
+                    {student.archivedAt ? <span className="badge">Archived</span> : null}
                     <span className={student.hasBeenSelected ? 'badge' : 'badge pending'}>{student.hasBeenSelected ? 'Selected before' : 'Not selected'}</span>
-                    <button className="remove-student-button" type="button" onClick={() => handleRemoveStudent(student)} disabled={isSaving || student.hasBeenSelected} title={student.hasBeenSelected ? 'Students selected in a draw cannot be removed' : `Remove ${student.name}`} aria-label={student.hasBeenSelected ? `${student.name} cannot be removed because they were selected before` : `Remove ${student.name}`}>
-                      Remove
+                    <button className="remove-student-button" type="button" onClick={() => handleArchiveToggle(student)} disabled={isSaving} title={student.archivedAt ? `Restore ${student.name}` : `Archive ${student.name}`} aria-label={student.archivedAt ? `Restore ${student.name}` : `Archive ${student.name}`}>
+                      {student.archivedAt ? 'Restore' : 'Archive'}
                     </button>
                   </div>
                 ))}

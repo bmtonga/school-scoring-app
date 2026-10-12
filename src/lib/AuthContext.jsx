@@ -10,7 +10,7 @@ const ROLE_ROUTES = {
   principal: '/principal',
 }
 
-const getRoleFromSession = (session) => session?.user?.user_metadata?.role ?? null
+const getRoleFromSession = (session) => session?.user?.app_metadata?.role ?? null
 
 export const getDashboardPath = (role) => ROLE_ROUTES[role] ?? '/login'
 
@@ -19,22 +19,39 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [authError, setAuthError] = useState('')
 
   useEffect(() => {
     let isMounted = true
 
     const initializeSession = async () => {
-      const { data } = await supabase.auth.getSession()
+      try {
+        const { data, error } = await supabase.auth.getSession()
 
-      if (!isMounted) {
-        return
+        if (error) {
+          throw error
+        }
+
+        if (!isMounted) {
+          return
+        }
+
+        const currentSession = data.session
+        setSession(currentSession)
+        setUser(currentSession?.user ?? null)
+        setRole(getRoleFromSession(currentSession))
+      } catch (error) {
+        if (isMounted) {
+          setSession(null)
+          setUser(null)
+          setRole(null)
+          setAuthError(error instanceof Error ? error.message : 'Unable to restore your session.')
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
       }
-
-      const currentSession = data.session
-      setSession(currentSession)
-      setUser(currentSession?.user ?? null)
-      setRole(getRoleFromSession(currentSession))
-      setLoading(false)
     }
 
     initializeSession()
@@ -42,6 +59,7 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setAuthError('')
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
       setRole(getRoleFromSession(nextSession))
@@ -60,8 +78,9 @@ export function AuthProvider({ children }) {
       user,
       role,
       loading,
+      authError,
     }),
-    [session, user, role, loading],
+    [session, user, role, loading, authError],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
