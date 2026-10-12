@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { PROGRAM_IDS } from '../lib/programs'
 
 const LEVEL_OPTIONS = ['junior', 'senior']
 
@@ -20,38 +21,10 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
-    let isMounted = true
-
-    const fetchProgram = async () => {
-      setIsLoadingProgram(true)
-      setErrorMessage('')
-
-      const { data, error } = await supabase
-        .from('programs')
-        .select('id, name')
-        .eq('name', programName)
-        .single()
-
-      if (!isMounted) {
-        return
-      }
-
-      if (error) {
-        setProgramId(null)
-        setErrorMessage(error.message)
-        setIsLoadingProgram(false)
-        return
-      }
-
-      setProgramId(data.id)
-      setIsLoadingProgram(false)
-    }
-
-    fetchProgram()
-
-    return () => {
-      isMounted = false
-    }
+    setIsLoadingProgram(true)
+    setErrorMessage('')
+    setProgramId(PROGRAM_IDS[programName] ?? null)
+    setIsLoadingProgram(false)
   }, [programName])
 
   const classEntries = useMemo(
@@ -247,8 +220,9 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
   }
 
   return (
-    <section>
+    <section className="surface">
       <h2>Weekly Draw</h2>
+      <p className="section-kicker">Select one student from every participating class.</p>
 
       {showLevelToggle ? (
         <fieldset>
@@ -281,16 +255,18 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
         {isDrawing ? 'Drawing...' : 'Start Weekly Draw'}
       </button>
 
-      {errorMessage ? <p>{errorMessage}</p> : null}
-      {successMessage ? <p>{successMessage}</p> : null}
+      {errorMessage ? <p className="status-message error-message" role="alert">{errorMessage}</p> : null}
+      {successMessage ? <p className="status-message" role="status">{successMessage}</p> : null}
 
       {classEntries.length > 0 ? (
         <div>
+          <p className="muted">{classEntries.filter((entry) => entry.confirmed).length} of {classEntries.length} classes confirmed</p>
+          <div className="progress-line"><span style={{ width: `${(classEntries.filter((entry) => entry.confirmed).length / classEntries.length) * 100}%` }} /></div>
+          <div className="draw-grid">
           {classEntries.map((entry) => (
-            <article key={entry.classInfo.id}>
-              <h3>{toClassLabel(entry.classInfo)}</h3>
-              <p>Drawn Student: {entry.currentStudent.name}</p>
-              <p>Status: {entry.confirmed ? 'Present confirmed' : 'Awaiting confirmation'}</p>
+            <article className="draw-card" key={entry.classInfo.id}>
+              <div className="draw-card-header"><h3>{toClassLabel(entry.classInfo)}</h3><span className={entry.confirmed ? 'badge' : 'badge pending'}>{entry.confirmed ? 'Present' : 'Awaiting'}</span></div>
+              <p>Drawn student: <strong>{entry.currentStudent.name}</strong></p>
 
               {entry.redrawHistory.length > 0 ? (
                 <div>
@@ -303,7 +279,7 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
                 </div>
               ) : null}
 
-              <button
+              <div className="draw-actions"><button
                 type="button"
                 onClick={() => markPresent(entry.classInfo.id)}
                 disabled={entry.confirmed || isSaving || isSaved}
@@ -311,14 +287,16 @@ function WeeklyDraw({ programName, showLevelToggle = false }) {
                 Present
               </button>
               <button
+                className="button-danger"
                 type="button"
                 onClick={() => redrawAbsent(entry.classInfo.id)}
                 disabled={isSaving || isSaved}
               >
                 Not Present
-              </button>
+              </button></div>
             </article>
           ))}
+          </div>
 
           <button type="button" onClick={saveFinalDraws} disabled={!allConfirmed || isSaving || isSaved}>
             {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Weekly Draw'}

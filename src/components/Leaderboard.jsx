@@ -65,13 +65,13 @@ function Leaderboard({ programId, title = 'Leaderboard', level, showLevelToggle 
   }, [activeLevel, programId, showLevelToggle])
 
   return (
-    <section className="card">
+    <section className="surface">
       <h2>{title}</h2>
 
       {showLevelToggle ? (
         <fieldset>
           <legend>Level</legend>
-          {LEVELS.map((levelOption) => (
+          <div className="choice-row">{LEVELS.map((levelOption) => (
             <label key={levelOption} htmlFor={`leaderboard-level-${programId}-${levelOption}`}>
               <input
                 id={`leaderboard-level-${programId}-${levelOption}`}
@@ -83,17 +83,17 @@ function Leaderboard({ programId, title = 'Leaderboard', level, showLevelToggle 
               />
               {levelOption}
             </label>
-          ))}
+          ))}</div>
         </fieldset>
       ) : null}
 
       {isLoading ? <p>Loading leaderboard...</p> : null}
-      {errorMessage ? <p>{errorMessage}</p> : null}
+      {errorMessage ? <p className="status-message error-message" role="alert">{errorMessage}</p> : null}
 
       {!isLoading && !errorMessage && rows.length === 0 ? <p>No leaderboard scores yet.</p> : null}
 
       {!isLoading && !errorMessage && rows.length > 0 ? (
-        <table>
+        <div className="table-wrap"><table>
           <thead>
             <tr>
               <th>Rank</th>
@@ -104,7 +104,7 @@ function Leaderboard({ programId, title = 'Leaderboard', level, showLevelToggle 
           <tbody>
             {rows.map((row, index) => (
               <tr key={row.class_id} className={index === 0 ? 'leaderboard-row leader' : 'leaderboard-row'}>
-                <td>{index + 1}</td>
+                <td className="rank">{index + 1}</td>
                 <td>
                   Grade {row.grade} {row.class_name} ({row.level})
                 </td>
@@ -112,7 +112,7 @@ function Leaderboard({ programId, title = 'Leaderboard', level, showLevelToggle 
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       ) : null}
     </section>
   )

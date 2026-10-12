@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { PROGRAM_IDS } from '../lib/programs'
 
 const todayAsDateString = () => new Date().toISOString().slice(0, 10)
 
@@ -16,34 +17,7 @@ function ScoreEntry({ programName }) {
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
-    let isMounted = true
-
-    const fetchProgram = async () => {
-      const { data, error } = await supabase
-        .from('programs')
-        .select('id')
-        .eq('name', programName)
-        .single()
-
-      if (!isMounted) {
-        return
-      }
-
-      if (error) {
-        setProgramId(null)
-        setErrorMessage(error.message)
-        setIsLoading(false)
-        return
-      }
-
-      setProgramId(data.id)
-    }
-
-    fetchProgram()
-
-    return () => {
-      isMounted = false
-    }
+    setProgramId(PROGRAM_IDS[programName] ?? null)
   }, [programName])
 
   useEffect(() => {
@@ -234,19 +208,20 @@ function ScoreEntry({ programName }) {
   }
 
   return (
-    <section>
+    <section className="surface">
       <h2>Score Entry</h2>
+      <p className="section-kicker">Add whole-number points for each present student.</p>
 
       {isLoading ? <p>Loading today&apos;s draws...</p> : null}
-      {errorMessage ? <p>{errorMessage}</p> : null}
-      {successMessage ? <p>{successMessage}</p> : null}
+      {errorMessage ? <p className="status-message error-message" role="alert">{errorMessage}</p> : null}
+      {successMessage ? <p className="status-message" role="status">{successMessage}</p> : null}
 
       {!isLoading && drawRows.length === 0 ? <p>No unscored draws found for today.</p> : null}
 
       {!isLoading && drawRows.length > 0 ? (
         <form onSubmit={handleSubmit}>
-          {drawRows.map((row) => (
-            <div key={row.drawId}>
+          <div className="score-list">{drawRows.map((row) => (
+            <div className="score-row" key={row.drawId}>
               <p>
                 <strong>{row.student.name}</strong> — {buildClassLabel(row.classInfo)}
               </p>
@@ -262,7 +237,7 @@ function ScoreEntry({ programName }) {
                 required
               />
             </div>
-          ))}
+          ))}</div>
 
           <button type="submit" disabled={isSaving || isSubmitted}>
             {isSaving ? 'Saving...' : isSubmitted ? 'Submitted' : 'Submit Scores'}

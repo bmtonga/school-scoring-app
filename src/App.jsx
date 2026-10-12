@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import ManageClasses from './pages/ManageClasses'
 import Numeracy from './pages/Numeracy'
 import PrincipalDashboard from './pages/PrincipalDashboard'
+import StudentManagement from './pages/StudentManagement'
 
 function App() {
   return (
@@ -21,6 +22,14 @@ function App() {
         }
       />
       <Route
+        path="/numeracy/students"
+        element={
+          <ProtectedRoute allowedRoles={['numeracy']}>
+            <StudentManagement programName="numeracy" title="Numeracy" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/literacy"
         element={
           <ProtectedRoute allowedRoles={['literacy']}>
@@ -29,10 +38,26 @@ function App() {
         }
       />
       <Route
+        path="/literacy/students"
+        element={
+          <ProtectedRoute allowedRoles={['literacy']}>
+            <StudentManagement programName="literacy" title="Literacy" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/just-a-minute"
         element={
           <ProtectedRoute allowedRoles={['just_a_minute']}>
             <JustAMinute />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/just-a-minute/students"
+        element={
+          <ProtectedRoute allowedRoles={['just_a_minute']}>
+            <StudentManagement programName="just_a_minute" title="Just a Minute" />
           </ProtectedRoute>
         }
       />

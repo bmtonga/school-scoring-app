@@ -49,35 +49,22 @@ function Login() {
   }
 
   return (
-    <main>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
-
-        {errorMessage ? <p>{errorMessage}</p> : null}
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing in...' : 'Sign in'}
-        </button>
-      </form>
+    <main className="login-page">
+      <section className="login-intro">
+        <div className="brand-lockup login-brand"><span className="brand-mark">S</span></div>
+        <div><h1>Make every score count.</h1><p>A calm, clear home for weekly draws, classroom scores, and school-wide progress.</p></div>
+      </section>
+      <section className="login-form-side">
+        <form className="login-form" onSubmit={handleSubmit}>
+          <p className="eyebrow">School Scoring Hub</p>
+          <h2>Welcome back</h2>
+          <p className="form-intro">Sign in to continue to your scoring workspace.</p>
+          <div className="form-field"><label htmlFor="email">Email</label><input id="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
+          <div className="form-field"><label htmlFor="password">Password</label><input id="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required /></div>
+          {errorMessage ? <p className="status-message error-message" role="alert">{errorMessage}</p> : null}
+          <button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in...' : 'Sign in'}</button>
+        </form>
+      </section>
     </main>
   )
 }
