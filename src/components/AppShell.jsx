@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import logo from '../assets/logo.png'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
@@ -48,7 +49,7 @@ function AppShell({ children, title, description }) {
       <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
         <div className="brand-lockup">
           <Link to={isPrincipal ? '/principal' : visibleItems[0]?.path ?? '/login'} onClick={() => setIsOpen(false)}>
-            <span className="brand-mark">S</span>
+            <span className="brand-mark"><img src={logo} alt="Vinjeru School Trust" /></span>
             <span><strong>School</strong><small>Scoring hub</small></span>
           </Link>
         </div>

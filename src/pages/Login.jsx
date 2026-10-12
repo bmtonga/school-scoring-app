@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import logo from '../assets/logo.png'
 import { getDashboardPath, useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
@@ -58,7 +59,7 @@ function Login() {
   return (
     <main className="login-page">
       <section className="login-intro">
-        <div className="brand-lockup login-brand"><span className="brand-mark">S</span></div>
+        <div className="brand-lockup login-brand"><span className="brand-mark"><img src={logo} alt="Vinjeru School Trust" /></span></div>
         <div><h1>Make every score count.</h1><p>A calm, clear home for weekly draws, classroom scores, and school-wide progress.</p></div>
       </section>
       <section className="login-form-side">
